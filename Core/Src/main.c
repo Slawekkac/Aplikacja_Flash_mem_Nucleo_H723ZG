@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +46,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+char *data = "hello from Slawomir\
+		I test memory flash";
+uint32_t addressflash = 0x080B0000;
+uint32_t noofdatatowrite = 15;
+char rxdata[64];
+uint32_t noofdatatoread = 18;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,6 +109,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 	  HAL_Delay(250);
+	  Flash_Program_Data(addressflash, (uint32_t*)data, noofdatatowrite);
+	  Flash_Read_Data(addressflash, (uint32_t*)&rxdata[0], noofdatatoread);
   }
   /* USER CODE END 3 */
 }
