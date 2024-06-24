@@ -25,7 +25,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
+#include "flash.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ADDRESFLASHMEM		(0x080B0000)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -144,24 +146,37 @@ void StartDefaultTask(void *argument)
 void StartFlashMem(void *argument)
 {
   /* USER CODE BEGIN StartFlashMem */
-	char *data = "hello from Slawomir\
-		I test memory flash";
-	uint32_t addressflash = 0x080B0000;
-	uint32_t noofdatatowrite = 15;
-	char rxdata[64];
-	uint32_t noofdatatoread = 18;
+	char *data = "Hello from NUCLEO-H723ZG. This is test write and read from memory flash: ";
+	uint32_t addressflash = ADDRESFLASHMEM;
+	uint32_t noofdatatowrite = 0;
+	char str2[20];
+	char txdata[strlen(data) + strlen(str2)];
+	char rxdata[strlen(data) + strlen(str2)];
+	uint16_t noofwrite = 0;
+	uint32_t noofdatatoread = 0;
   /* Infinite loop */
   for(;;)
   {
 
-	  addressflash = 0x080B0000;
-	  noofdatatowrite = 15;
-	  Flash_Program_Data(addressflash, (uint32_t*)data, noofdatatowrite);
-	  addressflash = 0x080B0000;
-	  noofdatatoread = 18;
+	  addressflash = ADDRESFLASHMEM;
+	  memcpy(txdata, data, strlen(data));
+	  sprintf(str2, "%d", noofwrite++);
+	  strcpy(&txdata[strlen(data)], str2);
+	  noofdatatowrite = (strlen(txdata) + strlen(str2))/4;
+	  int16_t status = Flash_Program_Data(addressflash, (uint32_t*)txdata, noofdatatowrite);
+	  if (status == 0) {
+		  printf("Tx data: %s \n", txdata);
+	  }else
+	  {
+		  printf("Error: %d", status);
+	  }
+
+	  addressflash = ADDRESFLASHMEM;
+	  noofdatatoread = (strlen(txdata) + strlen(str2))/4;
 	  Flash_Read_Data(addressflash, (uint32_t*)&rxdata[0], noofdatatoread);
+	  printf("RX data: %s \n", rxdata);
 	  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-	  osDelay(1000);
+	  osDelay(5000);
   }
   /* USER CODE END StartFlashMem */
 }
