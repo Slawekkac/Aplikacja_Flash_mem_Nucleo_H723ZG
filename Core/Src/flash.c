@@ -8,6 +8,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include <errno.h>
 /* Private includes ----------------------------------------------------------*/
 
@@ -52,7 +54,7 @@ int16_t Flash_Program_Data (uint32_t StartAddress, uint32_t *pData, uint32_t noO
 
 	uint32_t NoOfSector = EndSector - StartSector + 1;
 
-	HAL_FLASH_Unlock();
+
 
 	static FLASH_EraseInitTypeDef EraseInitStruct;
 	uint32_t SectorError;
@@ -64,6 +66,9 @@ int16_t Flash_Program_Data (uint32_t StartAddress, uint32_t *pData, uint32_t noO
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 	EraseInitStruct.Sector = StartSector;
 	EraseInitStruct.NbSectors = NoOfSector;
+
+	taskENTER_CRITICAL();
+	HAL_FLASH_Unlock();
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
@@ -86,6 +91,7 @@ int16_t Flash_Program_Data (uint32_t StartAddress, uint32_t *pData, uint32_t noO
 	}
 
 	HAL_FLASH_Lock();
+	taskEXIT_CRITICAL();
 
 	return HAL_OK;
 }
